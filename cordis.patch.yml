@@ -1,0 +1,5 @@
+# dsh-plugin-polish bundle patch: registers the polish layer into the Web UI.
+# `name` MUST equal package.json's name (scoped specifier included).
+- insert:
+    - id: dsh-plugin-polish
+      name: dsh-plugin-polish
