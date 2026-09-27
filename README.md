@@ -6,6 +6,16 @@ DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 
 目标只有一句话：**让整个界面在切换与开合时稳定、同步、干脆**——
 不需要的地方一个动画都没有，需要的地方一条曲线走到底。
 
+> **拥有**：全局动效时长/曲线（`--ds-transition-duration*`、`--ds-ease-in-out`）、
+> 全局滚动条（`*{scrollbar-width:none}` + `body{--dsh-scrollbar-width:0}`）、
+> save-token / plugin console / antd 面板的表面适配、会话 header 节奏、
+> 排队气泡与 QueueDock 行的拖拽排序、macOS 顶部拖拽区、切会话瞬时贴底。
+> **冲突时**：会话滚动行为让给 `dsh-think-ux` / `dsh-smooth-stream`（流式跟随与
+> glide 归它们，本插件只保留"切会话不播中间态"）；`--dsh-scrollbar-width` 若有
+> 第三方（如 `dsh-ui-harmonizer`）同写，以本插件为准（它的方案带 8px 补偿）。
+> **回滚**：`dsh.profile.bundles` 去掉 `dsh-plugin-polish` + 重启应用；只想关掉
+> 单个功能见下方「功能开关」。
+
 ---
 
 ## 动效规范
@@ -49,6 +59,37 @@ DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 
 // 关掉（不改任何时长，其余功能照旧）
 document.documentElement.dataset.polishMotion = "native";
 ```
+
+---
+
+## 功能开关
+
+九个功能都能单独关掉，不必卸载插件——在**插件启动前**把对应属性设成 `"native"`
+即可（host 启动时把 client bundle 读进内存，插件只在启动时读一次；DevTools 里
+改完刷新页面重读）。取值不等于 `"native"` 的任何值都视为开启。
+
+| 开关 | 关掉后 |
+| --- | --- |
+| `polishMotion` | 不做动效三档归一（CSS token 覆盖 + `motionScale` 扫描都不跑） |
+| `polishScrollbar` | 恢复原生滚动条（`--dsh-scrollbar-width` 也不再置 0） |
+| `polishSurfaces` | 不做 save-token / plugin console / antd / header 的表面适配 |
+| `polishArmor` | armor 药丸不再悬浮跟随排队行（不注册观察器） |
+| `polishDrag` | 排队气泡与 QueueDock 行不可拖拽排序（不注册监听器） |
+| `polishDragzone` | macOS 顶部条不再是窗口拖拽区 |
+| `polishSessionSwitch` | 切会话不做瞬时贴底，`smooth` 滚动不降级 |
+| `polishTimeLabel` | 会话行时间标签恢复自适应宽度（不再等宽数字） |
+| `polishPerf` | 不做离屏渲染跳过与子树 `contain` 隔离 |
+
+另有 `polishHas`（`:has()` 替换引擎），由 `parentState` 自己读取。
+
+```js
+// 例：只想要动效统一，不想要滚动条被隐藏、也不要拖拽排序
+document.documentElement.dataset.polishScrollbar = "native";
+document.documentElement.dataset.polishDrag = "native";
+```
+
+回归测试：`node tests/switch-test.mjs <改造前的 client.js 路径>` —— 断言「基线
+CSS 与改造前逐字节一致」「每个开关只摘掉自己那段」「JS 侧守卫齐全」（43 项）。
 
 ---
 
