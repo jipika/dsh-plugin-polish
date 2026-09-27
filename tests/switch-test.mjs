@@ -166,7 +166,8 @@ const SWITCHES = {
 	Dragzone:      ["data-polish-dragzone", "scrollbar-width:none"],
 	SessionSwitch: ["scroll-behavior:auto", "scrollbar-width:none"],
 	TimeLabel:     ["tabular-nums", "scrollbar-width:none"],
-	Perf:          ["content-visibility:auto", "scrollbar-width:none"]
+	Perf:          ["content-visibility:auto", "scrollbar-width:none"],
+	ImageZoom:     ["data-polish-lb-bar", "scrollbar-width:none"]
 };
 
 for (const [name, [gone, stays]] of Object.entries(SWITCHES)) {
@@ -182,10 +183,11 @@ for (const [name, [gone, stays]] of Object.entries(SWITCHES)) {
 const ALL_OFF = loadPlugin(CURRENT, {
 	polishMotion: "native", polishScrollbar: "native", polishSurfaces: "native",
 	polishDrag: "native", polishDragzone: "native", polishSessionSwitch: "native",
-	polishTimeLabel: "native", polishPerf: "native"
+	polishTimeLabel: "native", polishPerf: "native", polishImageZoom: "native"
 });
 for (const gone of ["scrollbar-width:none", ".polish-drag-handle", "tabular-nums",
-	"content-visibility:auto", "scroll-behavior:auto", "data-polish-dragzone", ".st-strip{"]) {
+	"content-visibility:auto", "scroll-behavior:auto", "data-polish-dragzone", ".st-strip{",
+	"data-polish-lb-bar"]) {
 	checkTrue(`③ 全关后不含 ${gone.slice(0, 24)}`, !ALL_OFF.css.includes(gone), ALL_OFF.css.includes(gone));
 }
 checkTrue("③ 全关后仍保留基础段（keyframes / 微交互）",

@@ -64,7 +64,7 @@ document.documentElement.dataset.polishMotion = "native";
 
 ## 功能开关
 
-九个功能都能单独关掉，不必卸载插件——在**插件启动前**把对应属性设成 `"native"`
+十个功能都能单独关掉，不必卸载插件——在**插件启动前**把对应属性设成 `"native"`
 即可（host 启动时把 client bundle 读进内存，插件只在启动时读一次；DevTools 里
 改完刷新页面重读）。取值不等于 `"native"` 的任何值都视为开启。
 
@@ -79,6 +79,7 @@ document.documentElement.dataset.polishMotion = "native";
 | `polishSessionSwitch` | 切会话不做瞬时贴底，`smooth` 滚动不降级 |
 | `polishTimeLabel` | 会话行时间标签恢复自适应宽度（不再等宽数字） |
 | `polishPerf` | 不做离屏渲染跳过与子树 `contain` 隔离 |
+| `polishImageZoom` | 图片灯箱恢复官方原样（不能缩放 / 平移 / 旋转） |
 
 另有 `polishHas`（`:has()` 替换引擎），由 `parentState` 自己读取。
 
@@ -89,7 +90,7 @@ document.documentElement.dataset.polishDrag = "native";
 ```
 
 回归测试：`node tests/switch-test.mjs <改造前的 client.js 路径>` —— 断言「基线
-CSS 与改造前逐字节一致」「每个开关只摘掉自己那段」「JS 侧守卫齐全」（43 项）。
+CSS 与改造前逐字节一致」「每个开关只摘掉自己那段」「JS 侧守卫齐全」（当前 45 项）。
 
 ---
 
@@ -141,6 +142,18 @@ CSS 与改造前逐字节一致」「每个开关只摘掉自己那段」「JS �
   侧边栏 brand 行标上 `-webkit-app-region:drag` 后，它就等同于系统标题栏
   （可拖动移窗，双击走 macOS 原生的「双击窗口标题栏」动作）。行内可交互元素
   一律退回 `no-drag`。
+- **图片灯箱增强**（`imageZoom`，`polishImageZoom=native` 关）：官方点开聊天里的
+  图片只有四张样式在管（`._backdrop_*` 全屏容器 / `._mask_*` 遮罩 / `._image_*`
+  居中大图 / `._close_*` 右上关闭）——没有缩放、没有旋转、也拖不动。这一段补上：
+  **滚轮**以光标为锚点缩放（0.2×–8×，吃掉页面滚动）、**按住拖动**平移（超过 3px
+  才算拖动，避免误触）、**双击**在 1× / 2× 之间切换、底部**工具栏**（缩小 / 放大 /
+  百分比 / 左转 90° / 右转 90° / 复位）、**键盘** `+` `-` 缩放、`0` 复位、`R` 旋转
+  （Esc 关闭仍走官方）。
+  三个实现约束：① 变换走 CSS 变量 `--polish-lb-scale/-rot/-x/-y`，不写
+  `img.style.transform`，免得和 React 争同一份内联样式；② 识别**不赌 hash 类名**
+  （`_1hos8_` 会随版本变）——先看父容器类名里的 `backdrop` 词根，再用计算样式兜底
+  （`position:fixed` 且铺满视口宽）；③ 状态挂在元素自身的 `__polishLb` 上，灯箱被
+  React 卸载时一起消失，**不需要任何清理钩子**。
 
 ### 5. 运行时性能（不只是动画）
 
