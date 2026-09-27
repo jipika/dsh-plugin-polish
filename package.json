@@ -3,6 +3,11 @@
   "version": "0.4.0",
   "description": "Theme, motion & runtime-performance layer for the DeepSeek Harness (dsh) Web UI: one motion scale (100/160/200 ms + a single ease-out curve) for both the shell's tokens and the durations plugins hardcode, a :has() replacement engine that turns the ecosystem's most expensive parent selectors into class lookups (measured 4.7 ms -> 0.6 ms per DOM insert), session switching that lands on the bottom instead of sliding, entrance-animation discipline for persistent chrome, scrollbars hidden while scrolling stays native, and third-party surfaces normalized onto the dsw-alias design tokens. Pure CSS/DOM client plugin, no bundle changes.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jipika/dsh-plugin-polish.git"
+  },
+  "homepage": "https://github.com/jipika/dsh-plugin-polish#readme",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
