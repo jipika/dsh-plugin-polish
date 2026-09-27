@@ -20,7 +20,7 @@ import { dirname, join } from "node:path";
 import vm from "node:vm";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const CURRENT = join(HERE, "..", "lib", "client.js");
+const CURRENT = process.env.POLISH_CLIENT || join(HERE, "..", "lib", "client.js");
 const BASELINE = process.argv[2] && existsSync(process.argv[2]) ? process.argv[2] : null;
 
 /* ---------------------------------------------------------------- stub DOM */
@@ -205,10 +205,13 @@ checkTrue("③ 幂等注册守卫仍在（防 duplicate factory 连累整批模�
 
 /* -------------------------------------------------------------- 汇总 */
 
-const failed = results.filter((r) => !r.ok);
 if (ALL.applyError) {
-	console.log(`\n[提示] 基线工厂在 stub 环境下抛过异常（不影响 CSS 断言）：${ALL.applyError.message}`);
+	/* apply() 抛错 → module.exports 不完整 → 宿主拿不到 apply/inject，插件注册失败。
+	 * 抛错点之前注入的 CSS 会让视觉上「看起来正常」，所以这是硬失败而非提示。
+	 * （2026-09-27 真实漏过一次：zoomShortcut.start(ctx) 里的 ctx 未定义。） */
+	results.push({ ok: false, name: "apply() 全程未抛错", actual: ALL.applyError.message, expected: "无异常" });
 }
+const failed = results.filter((r) => !r.ok);
 for (const r of results) {
 	console.log(`${r.ok ? "✓" : "✗"} ${r.name}${r.ok ? "" : `  → got ${JSON.stringify(r.actual)}, want ${JSON.stringify(r.expected)}`}`);
 }
