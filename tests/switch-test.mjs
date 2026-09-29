@@ -4,24 +4,20 @@
  * 用最小 DOM stub 在 Node 里真跑 lib/client.js 的 factory，抓出它注入到
  * <style data-dsh-polish> 的 CSS 文本，然后断言：
  *
- *   ① 基线（不设任何开关）生成的 CSS 与"加开关之前"的版本**逐字节一致**
- *      —— 证明这次改造没有改变默认行为（这是唯一能在重启应用之前拿到的
- *      强证据；client bundle 在 host 启动时读入内存，改完必须重启才生效）。
+ *   ① 默认 CSS 注入成功。
  *   ② 每个开关置 native 时，对应段落确实从 CSS 里消失，且**其它段落仍在**
  *      —— 证明开关是"外科式"的，不是把整张表关掉。
- *   ③ JS 侧模块的启动守卫存在（armor / drag / sessionSwitch / motion）。
+ *   ③ JS 侧模块的启动守卫存在（shell decoration / drag / motion）。
  *
- * 跑法：node tests/switch-test.mjs [baseline-client.js 路径]
- *   baseline-client.js 缺省时跳过 ①（只跑 ② ③）。
+ * 跑法：node tests/switch-test.mjs
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import vm from "node:vm";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CURRENT = process.env.POLISH_CLIENT || join(HERE, "..", "lib", "client.js");
-const BASELINE = process.argv[2] && existsSync(process.argv[2]) ? process.argv[2] : null;
 
 /* ---------------------------------------------------------------- stub DOM */
 
@@ -88,8 +84,7 @@ function loadPlugin(sourcePath, dataset) {
 		console
 	};
 	sandbox.globalThis = sandbox;
-	/* 常用浏览器全局：插件里会碰 Element.prototype（scrollTo 降级），
-	 * 少了它工厂会在 sessionSwitch 处抛错，导致后面的模块拿不到断言。 */
+	/* Browser globals required by the remaining modules. */
 	class Element { }
 	class HTMLElement extends Element { }
 	class Node { }
@@ -135,37 +130,22 @@ function checkTrue(name, cond, detail) {
 	results.push({ ok: !!cond, name, actual: detail === undefined ? !!cond : detail, expected: true });
 }
 
-/* --------------------------------------------------- ① 基线逐字节一致 */
+/* ------------------------------------------------------ ① 默认注入成功 */
 
 const ALL = loadPlugin(CURRENT, {});
 checkTrue("基线：注入的 CSS 非空", ALL.css.length > 4000, ALL.css.length);
 check("基线：插件 id", ALL.id, "dsh-plugin-polish");
-
-if (BASELINE) {
-	const OLD = loadPlugin(BASELINE, {});
-	check("① 基线 CSS 与改造前逐字节一致", ALL.css === OLD.css, true);
-	if (ALL.css !== OLD.css) {
-		let i = 0;
-		while (i < ALL.css.length && ALL.css[i] === OLD.css[i]) i++;
-		console.log(`\n[差异定位] 第 ${i} 字符处：\n  新: ${JSON.stringify(ALL.css.slice(i, i + 120))}\n  旧: ${JSON.stringify(OLD.css.slice(i, i + 120))}\n`);
-	}
-	check("① 基线 CSS 长度一致", ALL.css.length, OLD.css.length);
-} else {
-	console.log("（未提供 baseline 文件，跳过 ① 逐字节比对）");
-}
 
 /* ------------------------------------------- ② 每个开关只摘掉自己那段 */
 
 /** 开关名 → [关闭后应消失的特征串, 关闭后仍应存在的其它特征串] */
 const SWITCHES = {
 	Motion:        ["--ds-transition-duration-fast:100ms", ".st-strip{"],
-	Scrollbar:     ["scrollbar-width:none", ".polish-drag-handle"],
+	Scrollbar:     ["scrollbar-width:none", "content:'⠿'"],
 	Surfaces:      [".pc_row,.pc_floatPanel", "scrollbar-width:none"],
-	Armor:         [null, null],                     // 纯 JS 侧，见 ③
-	Drag:          [".polish-drag-handle", "scrollbar-width:none"],
+	Drag:          ["content:'⠿'", "scrollbar-width:none"],
 	Dragzone:      ["data-polish-dragzone", "scrollbar-width:none"],
-	SessionSwitch: ["scroll-behavior:auto", "scrollbar-width:none"],
-	TimeLabel:     ["tabular-nums", "scrollbar-width:none"],
+	TimeLabel:     ["[class$='_sessionRow'] [class$='_time']{min-width:34px", "scrollbar-width:none"],
 	Perf:          ["content-visibility:auto", "scrollbar-width:none"],
 	ImageZoom:     ["data-polish-lb-bar", "scrollbar-width:none"]
 };
@@ -182,11 +162,11 @@ for (const [name, [gone, stays]] of Object.entries(SWITCHES)) {
 
 const ALL_OFF = loadPlugin(CURRENT, {
 	polishMotion: "native", polishScrollbar: "native", polishSurfaces: "native",
-	polishDrag: "native", polishDragzone: "native", polishSessionSwitch: "native",
+	polishDrag: "native", polishDragzone: "native",
 	polishTimeLabel: "native", polishPerf: "native", polishImageZoom: "native"
 });
-for (const gone of ["scrollbar-width:none", ".polish-drag-handle", "tabular-nums",
-	"content-visibility:auto", "scroll-behavior:auto", "data-polish-dragzone", ".st-strip{",
+for (const gone of ["scrollbar-width:none", "content:'⠿'", "tabular-nums",
+	"content-visibility:auto", "data-polish-dragzone", ".st-strip{",
 	"data-polish-lb-bar"]) {
 	checkTrue(`③ 全关后不含 ${gone.slice(0, 24)}`, !ALL_OFF.css.includes(gone), ALL_OFF.css.includes(gone));
 }
@@ -196,9 +176,9 @@ checkTrue("③ 全关后仍保留基础段（keyframes / 微交互）",
 /* --------------------------------------------------- ③ JS 侧启动守卫 */
 
 const src = readFileSync(CURRENT, "utf8");
-checkTrue("③ lift 有守卫", /if \(SW\.armor\) lift\.start\(\);/.test(src), true);
+checkTrue("③ shellDecor 有守卫", /if \(SW\.surfaces \|\| SW\.dragzone\) shellDecor\.start\(\);/.test(src), true);
 checkTrue("③ dragSort 有守卫", /if \(SW\.drag\) dragSort\.start\(\);/.test(src), true);
-checkTrue("③ sessionSwitch 有守卫", /if \(SW\.sessionSwitch\) sessionSwitch\.start\(\);/.test(src), true);
+checkTrue("③ 会话切换不再接管滚动", !src.includes("sessionSwitch.start()") && !src.includes("proto.scrollTo ="), true);
 checkTrue("③ motionScale 有守卫", /if \(SW\.motion\) motionScale\.start\(\);/.test(src), true);
 checkTrue("③ publishSurface 有守卫", /function publishSurface\(\) \{\s*\n\s*if \(!SW\.surfaces\) return;/.test(src), true);
 checkTrue("③ applyDragzone 有守卫", /if \(!SW\.dragzone\) return;/.test(src), true);
