@@ -142,7 +142,7 @@ check("基线：插件 id", ALL.id, "dsh-plugin-polish");
 const SWITCHES = {
 	Motion:        ["--ds-transition-duration-fast:100ms", ".st-strip{"],
 	Scrollbar:     ["scrollbar-width:none", "content:'⠿'"],
-	Surfaces:      [".pc_row,.pc_floatPanel", "scrollbar-width:none"],
+	Surfaces:      [".st-strip{", "scrollbar-width:none"],
 	Drag:          ["content:'⠿'", "scrollbar-width:none"],
 	Dragzone:      ["data-polish-dragzone", "scrollbar-width:none"],
 	TimeLabel:     ["[class$='_sessionRow'] [class$='_time']{min-width:34px", "scrollbar-width:none"],
@@ -156,6 +156,17 @@ for (const [name, [gone, stays]] of Object.entries(SWITCHES)) {
 	checkTrue(`② polish${name}=native → 该段消失`, !off.css.includes(gone), off.css.includes(gone));
 	checkTrue(`② polish${name}=native → 其它段仍在`, off.css.includes(stays), !off.css.includes(stays));
 	checkTrue(`② polish${name}=native → CSS 仍非空`, off.css.length > 1000, off.css.length);
+}
+
+/* --------------------------------- ②b 2026-10-04 停用的过时选择器不再注入
+ * 宿主已不存在（dsh-plugin-console 已卸载、dsh-automation 未装在 desktop），
+ * 这几条规则只会白占样式表。恢复任何一条时，同步删掉这里的断言。 */
+
+for (const dead of [".pc_row", ".pc_floatPanel", ".pc_sourceMenu", ".pc_compDrop",
+	".pc_modalCard", ".pc_backTop", ".pc_compToggle", ".pc_switchKnob", ".pc_modalBackdrop",
+	".pc_consentCard", ".pc_compCard",
+	"body .dsh-st-chip", "body .dsh-st-card"]) {
+	checkTrue(`②b 注入的 CSS 不含过时选择器 ${dead}`, !ALL.css.includes(dead), ALL.css.includes(dead));
 }
 
 /* ---------------------------------------------- 全部关闭时只剩基础段落 */
