@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="assets/icon.svg" width="72" alt="dsh-plugin-polish icon">
+</div>
+
 # dsh-plugin-polish
 
 DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 插件，
