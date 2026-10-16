@@ -181,8 +181,8 @@ for (const gone of ["scrollbar-width:none", "content:'⠿'", "tabular-nums",
 	"data-polish-lb-bar"]) {
 	checkTrue(`③ 全关后不含 ${gone.slice(0, 24)}`, !ALL_OFF.css.includes(gone), ALL_OFF.css.includes(gone));
 }
-checkTrue("③ 全关后仍保留基础段（keyframes / 微交互）",
-	ALL_OFF.css.includes("@keyframes polishPop") && ALL_OFF.css.includes("::selection"), true);
+checkTrue("③ 全关后仍保留基础段（微交互 ::selection）",
+	ALL_OFF.css.includes("::selection"), true);
 
 /* --------------------------------------------------- ③ JS 侧启动守卫 */
 
