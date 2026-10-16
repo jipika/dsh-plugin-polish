@@ -146,7 +146,7 @@ const SWITCHES = {
 	Drag:          ["content:'⠿'", "scrollbar-width:none"],
 	Dragzone:      ["data-polish-dragzone", "scrollbar-width:none"],
 	TimeLabel:     ["[class$='_sessionRow'] [class$='_time']{min-width:34px", "scrollbar-width:none"],
-	Perf:          ["content-visibility:auto", "scrollbar-width:none"],
+	Perf:          ["[data-composer-card]{contain:style}", "scrollbar-width:none"],
 	ImageZoom:     ["data-polish-lb-bar", "scrollbar-width:none"]
 };
 
@@ -177,7 +177,7 @@ const ALL_OFF = loadPlugin(CURRENT, {
 	polishTimeLabel: "native", polishPerf: "native", polishImageZoom: "native"
 });
 for (const gone of ["scrollbar-width:none", "content:'⠿'", "tabular-nums",
-	"content-visibility:auto", "data-polish-dragzone", "[class*=ant-] .ant-btn-primary{",
+	"[data-composer-card]{contain:style}", "data-polish-dragzone", "[class*=ant-] .ant-btn-primary{",
 	"data-polish-lb-bar"]) {
 	checkTrue(`③ 全关后不含 ${gone.slice(0, 24)}`, !ALL_OFF.css.includes(gone), ALL_OFF.css.includes(gone));
 }

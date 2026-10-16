@@ -12,10 +12,10 @@ DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 
 
 > **拥有**：全局动效时长/曲线（`--ds-transition-duration*`、`--ds-ease-in-out`）、
 > 全局滚动条（`*{scrollbar-width:none}` + `body{--dsh-scrollbar-width:0}`）、
-> plugin console / antd 面板的表面适配、会话 header 节奏、
+> antd 面板的表面适配、会话 header 节奏、
 > QueueDock 行的视觉拖拽排序、macOS 顶部拖拽区。
 > **冲突时**：会话滚动行为让给 DSH 和 `dsh-stream-think`；`--dsh-scrollbar-width` 若有
-> 第三方若同写（其方案常带 8px 补偿），以本插件为准。
+> 第三方同写（其方案常带 8px 补偿），以本插件为准。
 > **回滚**：`dsh.profile.bundles` 去掉 `dsh-plugin-polish` + 重启应用；只想关掉
 > 单个功能见下方「功能开关」。
 
@@ -43,7 +43,7 @@ DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 
    （面板让位、进度条），并且优先加 `contain` / `content-visibility` 缩小代价。
 2. **常驻组件不许挂 `animation`**。React 每次重建都会让它从头播一遍，
    表现就是「切个会话，输入区上方抖一下」。进入动画只属于**真正新出现**的
-   浮层（`polishPop`，160ms 淡入 + 2px 上浮）。
+   浮层（本插件不自带进场 keyframes）。
 3. **切换时尊重阅读位置**。DSH 按会话恢复滚动位置，本插件不再在切换后的
    600 毫秒内强制滚到底部，也不改写全局 `scrollTo`。
 
@@ -74,7 +74,7 @@ document.documentElement.dataset.polishMotion = "native";
 | --- | --- |
 | `polishMotion` | 不做动效三档归一（CSS token 覆盖 + `motionScale` 扫描都不跑） |
 | `polishScrollbar` | 恢复原生滚动条（`--dsh-scrollbar-width` 也不再置 0） |
-| `polishSurfaces` | 不做 plugin console / antd / header 的表面适配 |
+| `polishSurfaces` | 不做 antd / header 的表面适配 |
 | `polishDrag` | QueueDock 行不可拖拽排序（不注册监听器） |
 | `polishDragzone` | macOS 顶部条不再是窗口拖拽区 |
 | `polishTimeLabel` | 会话行时间标签恢复自适应宽度（不再等宽数字） |
@@ -99,7 +99,7 @@ document.documentElement.dataset.polishDrag = "native";
 
 - **会话切换**：滚动位置由 DSH 的会话记忆恢复，本插件不再强行贴底。
 - **进入动画纪律**：常驻组件（armor 药丸、插件卡片…）不再
-  重播进场动画；只有浮层保留 160ms 的 `polishPop`。
+  重播进场动画（React 重建会让它从头播一遍）。
 - **全 app 时长/曲线统一**（`motionScale`），含运行时新插入的第三方样式表。
 - **会话行时间标签**：固定最小宽度 + 等宽数字，「1分钟 → 刚刚」不再挤动左邻。
 - **`prefers-reduced-motion` / `prefers-reduced-transparency`** 完整回退。
@@ -109,15 +109,18 @@ document.documentElement.dataset.polishDrag = "native";
 - **滚动条隐藏但保留原生滚动**（`scrollbar-width:none` +
   `::-webkit-scrollbar`），并把 shell 的 `--dsh-scrollbar-width` 补偿量置 0，
   避免隐藏后留下 8px 布局缺口。
-- **屏外渲染跳过**：长代码块 `content-visibility:auto` +
-  `contain-intrinsic-size:auto 480px`（刻意不碰 think 行 —— 那归 think 专用插件管）。
-- **布局隔离**：composer 卡片 `contain:style`；滚动链用
-  `overscroll-behavior:contain` 隔断。
+- **布局隔离**：composer 卡片 `contain:style`（**只用 `style`** —— `layout` /
+  `paint` 会把卡片变成其内部 fixed 浮层的 containing block，「推理等级」面板
+  曾因此飞到左上角）。
+- **刻意不做**：长代码块的 `content-visibility` 懒渲染、会话滚动器的
+  `overscroll-behavior` 隔断 —— 二者都会让对话区偏离官方观感（`b0eb98f` 撤回）。
+  思考行也不碰：它的渲染与测量归官方 `@deepseek-ai/dsh-client-ui-chat`
+  （slot `conversation.chat.reasoning.content`）。
 
 ### 3. 主题与材料对齐
 
 - 第三方插件面统一到 `--dsw-alias-*` token（深浅主题自动跟随）：
-  插件控制台 / automation 面板的 `.pc-*` 与 antd 默认蓝。
+  宿主里 antd 组件的默认蓝（本机宿主 = `@michengai/dsh-archive-manager`）。
 - **排队面板底色**不赌 token：JS 读页面实际背景色写进 `--polish-surface`，
   与页面同源（官方主题规则会把它压回默认值，赌 token 必输）。
 - 圆角统一到 shell 的 12px 卡片语言，浮层材质加 blur + 深阴影。
