@@ -12,10 +12,10 @@ DeepSeek Harness (dsh) Web UI 的**动效与稳定性层**。纯 DOM/CSS client 
 
 > **拥有**：全局动效时长/曲线（`--ds-transition-duration*`、`--ds-ease-in-out`）、
 > 全局滚动条（`*{scrollbar-width:none}` + `body{--dsh-scrollbar-width:0}`）、
-> save-token / plugin console / antd 面板的表面适配、会话 header 节奏、
+> plugin console / antd 面板的表面适配、会话 header 节奏、
 > QueueDock 行的视觉拖拽排序、macOS 顶部拖拽区。
 > **冲突时**：会话滚动行为让给 DSH 和 `dsh-stream-think`；`--dsh-scrollbar-width` 若有
-> 第三方（如 `dsh-ui-harmonizer`）同写，以本插件为准（它的方案带 8px 补偿）。
+> 第三方若同写（其方案常带 8px 补偿），以本插件为准。
 > **回滚**：`dsh.profile.bundles` 去掉 `dsh-plugin-polish` + 重启应用；只想关掉
 > 单个功能见下方「功能开关」。
 
@@ -74,7 +74,7 @@ document.documentElement.dataset.polishMotion = "native";
 | --- | --- |
 | `polishMotion` | 不做动效三档归一（CSS token 覆盖 + `motionScale` 扫描都不跑） |
 | `polishScrollbar` | 恢复原生滚动条（`--dsh-scrollbar-width` 也不再置 0） |
-| `polishSurfaces` | 不做 save-token / plugin console / antd / header 的表面适配 |
+| `polishSurfaces` | 不做 plugin console / antd / header 的表面适配 |
 | `polishDrag` | QueueDock 行不可拖拽排序（不注册监听器） |
 | `polishDragzone` | macOS 顶部条不再是窗口拖拽区 |
 | `polishTimeLabel` | 会话行时间标签恢复自适应宽度（不再等宽数字） |
@@ -98,7 +98,7 @@ document.documentElement.dataset.polishDrag = "native";
 ### 1. 动效与稳定性
 
 - **会话切换**：滚动位置由 DSH 的会话记忆恢复，本插件不再强行贴底。
-- **进入动画纪律**：常驻组件（save-token 条、armor 药丸、插件卡片…）不再
+- **进入动画纪律**：常驻组件（armor 药丸、插件卡片…）不再
   重播进场动画；只有浮层保留 160ms 的 `polishPop`。
 - **全 app 时长/曲线统一**（`motionScale`），含运行时新插入的第三方样式表。
 - **会话行时间标签**：固定最小宽度 + 等宽数字，「1分钟 → 刚刚」不再挤动左邻。
@@ -110,16 +110,14 @@ document.documentElement.dataset.polishDrag = "native";
   `::-webkit-scrollbar`），并把 shell 的 `--dsh-scrollbar-width` 补偿量置 0，
   避免隐藏后留下 8px 布局缺口。
 - **屏外渲染跳过**：长代码块 `content-visibility:auto` +
-  `contain-intrinsic-size:auto 480px`（刻意不碰 think 行，那是 dsh-think-ux
-  的地盘）。
+  `contain-intrinsic-size:auto 480px`（刻意不碰 think 行 —— 那归 think 专用插件管）。
 - **布局隔离**：composer 卡片 `contain:style`；滚动链用
   `overscroll-behavior:contain` 隔断。
 
 ### 3. 主题与材料对齐
 
 - 第三方插件面统一到 `--dsw-alias-*` token（深浅主题自动跟随）：
-  save-token 的 `.st-*`、infinite-gen-4 的 `.dsh-armor-*`、插件控制台 /
-  automation 面板的 `.pc-*` 与 antd 默认蓝。
+  插件控制台 / automation 面板的 `.pc-*` 与 antd 默认蓝。
 - **排队面板底色**不赌 token：JS 读页面实际背景色写进 `--polish-surface`，
   与页面同源（官方主题规则会把它压回默认值，赌 token 必输）。
 - 圆角统一到 shell 的 12px 卡片语言，浮层材质加 blur + 深阴影。
@@ -173,12 +171,12 @@ document.documentElement.dataset.polishDrag = "native";
 - **自查接口**：`__dshPolishStats()` 返回 CSS 规则数、`:has()` 与后缀选择器余量、
   已替换条数、DOM 节点数、三档 token 实际取值、两个开关状态与 JS 堆占用。
 
-#### 本机加载画像（记录用，非插件自身开销）
+#### 本机加载画像（2026-09 快照，记录用，非插件自身开销）
 
 | 项 | 实测 |
 | --- | --- |
 | client 插件 JS 总量 | **5.9MB**（未压缩；单个 `/plugins/??…` 请求 6.95MB / 1.5s） |
-| 体积前三 | dsh-config-manager 1.2MB、archive-manager 946KB、better-sidebar 823KB |
+| 体积前三 | dsh-config-manager 1.2MB、archive-manager 946KB（当时第三名 823KB 的插件现已不在本机） |
 | 页面样式规模 | 215 张样式表 / 8515 条规则 / 72 条后缀属性选择器 / 56 条 `:has()` |
 | DOM | 约 4.1k 节点（长会话的滚动容器内约 3k） |
 | 滚动 | p50 16.7ms、p90 17.5ms、0 帧 >20ms（60fps 稳定） |

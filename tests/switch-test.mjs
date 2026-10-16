@@ -140,9 +140,9 @@ check("基线：插件 id", ALL.id, "dsh-plugin-polish");
 
 /** 开关名 → [关闭后应消失的特征串, 关闭后仍应存在的其它特征串] */
 const SWITCHES = {
-	Motion:        ["--ds-transition-duration-fast:100ms", ".st-strip{"],
+	Motion:        ["--ds-transition-duration-fast:100ms", "[class*=ant-] .ant-btn-primary{"],
 	Scrollbar:     ["scrollbar-width:none", "content:'⠿'"],
-	Surfaces:      [".st-strip{", "scrollbar-width:none"],
+	Surfaces:      ["[class*=ant-] .ant-btn-primary{", "scrollbar-width:none"],
 	Drag:          ["content:'⠿'", "scrollbar-width:none"],
 	Dragzone:      ["data-polish-dragzone", "scrollbar-width:none"],
 	TimeLabel:     ["[class$='_sessionRow'] [class$='_time']{min-width:34px", "scrollbar-width:none"],
@@ -177,7 +177,7 @@ const ALL_OFF = loadPlugin(CURRENT, {
 	polishTimeLabel: "native", polishPerf: "native", polishImageZoom: "native"
 });
 for (const gone of ["scrollbar-width:none", "content:'⠿'", "tabular-nums",
-	"content-visibility:auto", "data-polish-dragzone", ".st-strip{",
+	"content-visibility:auto", "data-polish-dragzone", "[class*=ant-] .ant-btn-primary{",
 	"data-polish-lb-bar"]) {
 	checkTrue(`③ 全关后不含 ${gone.slice(0, 24)}`, !ALL_OFF.css.includes(gone), ALL_OFF.css.includes(gone));
 }
