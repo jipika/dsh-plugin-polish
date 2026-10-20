@@ -80,6 +80,7 @@ document.documentElement.dataset.polishMotion = "native";
 | `polishTimeLabel` | 会话行时间标签恢复自适应宽度（不再等宽数字） |
 | `polishPerf` | 不做离屏渲染跳过与子树 `contain` 隔离 |
 | `polishImageZoom` | 图片灯箱恢复官方原样（不能缩放 / 平移 / 旋转） |
+| `polishTabMenu` | 右侧栏 tab 右键菜单恢复官方单个「关闭」（不注册关闭其他/左侧/右侧/全部） |
 
 另有 `polishHas`（`:has()` 替换引擎），由 `parentState` 自己读取。
 
@@ -121,6 +122,10 @@ document.documentElement.dataset.polishDrag = "native";
 
 - 第三方插件面统一到 `--dsw-alias-*` token（深浅主题自动跟随）：
   宿主里 antd 组件的默认蓝（本机宿主 = `@michengai/dsh-archive-manager`）。
+- ~~config-manager 的用户消息气泡字号/行高拉回宿主档~~（2026-10-18 退役：
+  该插件已从双 profile 卸载，且官方 `ui-chat` 的 `.bubble` 已原生实现
+  `var(--dsh-content-font-size,14px)` / `calc(22px + var(--dsh-content-font-delta,0px))`，
+  两条规则随之删除，见 `lib/client.js`「1.7 已退役」注）。
 - **排队面板底色**不赌 token：JS 读页面实际背景色写进 `--polish-surface`，
   与页面同源（官方主题规则会把它压回默认值，赌 token 必输）。
 - 圆角统一到 shell 的 12px 卡片语言，浮层材质加 blur + 深阴影。
@@ -157,6 +162,8 @@ document.documentElement.dataset.polishDrag = "native";
   「放大后拖不动」的根因）；④ 状态挂在元素自身的 `__polishLb` 上，灯箱被 React
   卸载时一起消失，不需要任何清理钩子。平移带边界（`clampPan`）：放大后只允许露出
   多余的余量，比视口小的方向一律居中，免得图被拖到看不见。
+
+- **右侧栏 tab 右键菜单**（tabMenu，polishTabMenu=native 关）：官方只有一个「关闭」，这里在 sidebar.right.tab.menu.item 槽追加四个：关闭其他 / 关闭左侧 / 关闭右侧 / 关闭全部。批量关闭走 sidebarRight.closeIn/tabsIn，左右顺序走 [data-dockkit-strip-tabs] > [data-dockkit-tab] 的 DOM 顺序；拿不到顺序时左右两项自动隐藏，只留其他/全部。点菜单项先 dismiss() 再批量关。
 
 ### 5. 运行时性能（不只是动画）
 
@@ -234,3 +241,18 @@ View → Reload，⌘R 未绑定）。
 ## License
 
 MIT
+
+---
+
+## ☕ 赞赏支持
+
+如果 dsh-plugin-polish 对你的研究与测试有所帮助，欢迎请作者喝杯咖啡 ☕
+
+<p align="center">
+  <img src="assets/sponsor.jpg" width="260" alt="微信赞赏码" />
+  <img src="assets/afdian_reward.jpg" width="200" alt="爱发电赞助码" />
+</p>
+
+<p align="center">
+  <b>给项目点个 Star ⭐</b> 同样是对开发者最大的鼓励！
+</p>

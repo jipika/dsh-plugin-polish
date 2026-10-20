@@ -169,6 +169,17 @@ for (const dead of [".pc_row", ".pc_floatPanel", ".pc_sourceMenu", ".pc_compDrop
 	checkTrue(`②b 注入的 CSS 不含过时选择器 ${dead}`, !ALL.css.includes(dead), ALL.css.includes(dead));
 }
 
+/* --------------------- ②c 已退役（2026-10-18）：config-manager 用户气泡校正
+ * dsh-config-manager 已从双 profile 卸载（package.json/node_modules/bundles/patch
+ * 均无），且官方 ui-chat 的 .bubble 已原生实现同等字号/行高变量，
+ * lib/client.js 的「1.7」两条规则随之删除。这里钉住“不存在”，防止有人误加回。 */
+
+checkTrue("②c 气泡字号校正已退役（不存在）",
+	!ALL.css.includes('[class*="_chatEntryScope"]{font-size:var(--dsh-content-font-size,14px)!important;}'), true);
+checkTrue("②c 气泡行高校正已退役（不存在）",
+	!ALL.css.includes('[class*="_chatBubble"]{line-height:calc(22px + var(--dsh-content-font-delta,0px))!important;}'), true);
+const SURFACES_OFF = loadPlugin(CURRENT, { polishSurfaces: "native" });
+
 /* ---------------------------------------------- 全部关闭时只剩基础段落 */
 
 const ALL_OFF = loadPlugin(CURRENT, {
