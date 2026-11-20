@@ -1,8 +1,8 @@
 {
   "name": "dsh-plugin-polish",
   "icon": "./assets/icon.svg",
-  "version": "0.4.0",
-  "description": "Theme, motion and runtime performance layer for the DeepSeek Harness (dsh) Web UI: one motion scale, scoped DOM observers, stable native session scrolling, QueueDock visual drag, hidden scrollbars and third-party surfaces normalized onto the dsw-alias design tokens. Pure CSS/DOM client plugin, no bundle changes.",
+  "version": "0.7.0",
+  "description": "Theme, motion and runtime performance layer for the DeepSeek Harness (dsh) Web UI: one motion scale, scoped DOM observers, stable native session scrolling, real QueueDock drag reorder (host-spliced), hidden scrollbars and third-party surfaces normalized onto the dsw-alias design tokens.",
   "license": "MIT",
   "repository": {
     "type": "git",
